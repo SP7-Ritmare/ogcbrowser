@@ -1,0 +1,21 @@
+{
+  "name": "ocgbrowser",
+  "version": "1.0.0",
+  "authors": [
+    "menegon <ste.menegon@gmail.com>"
+  ],
+  "license": "GPL3",
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "test",
+    "tests"
+  ],
+  "dependencies": {
+    "ol3": "*",
+    "angular-openlayers-directive": "https://github.com/tombatossals/angular-openlayers-directive/archive/master.zip",
+    "angular-loading-bar": "~0.7.1",
+    "ol3-layerswitcher": "~1.0.1"
+  }
+}
