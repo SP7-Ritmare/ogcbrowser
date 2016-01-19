@@ -547,6 +547,7 @@ ogcb.CleanAll = function(opt_options) {
 
     button.addEventListener('click', handleCleanAll, false);
     button.addEventListener('touchstart', handleCleanAll, false);
+    button.title = 'Clean up layers';
 
     var element = document.createElement('div');
     element.className = 'ogcb-clean-all ol-unselectable ol-control';

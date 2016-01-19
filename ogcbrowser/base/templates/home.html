@@ -176,7 +176,7 @@
                               Number of registered nodes: {{ nodes.length }}
                           </div>
                       </div>
-                      <div class="media" ng-repeat="node in nodes  | filter:search | orderBy:'label'">
+                      <div class="media" ng-repeat="node in nodes  | filter:search | orderBy:'order'">
                           <div class="pull-left" href="#">
                               <img class="media-object" src="{{ node.logo }}"/>
                               <small ng-repeat="standard in node.standards">
@@ -217,12 +217,21 @@
                               <div class="col-md-offset-2">{{ node.name }}</div>
                           </div>
                           <div class="panel-body">
+                              <strong>Info</strong>
                               <ul>
                                   <li ng-repeat="addinfo in node.addinfo">
                                       <span><strong>{{ addinfo.0 }}:</strong> {{ addinfo.1 }}</span>
                                   </li>
                               </ul>
-                              <div><small><a href="{{ node.baseurl }}" class="btn btn-xs btn-link" target="_blank">{{ node.baseurl | limitTo:50 }} ...</a></small></div>
+                              <div>
+                                  <strong>References:</strong>
+                                  <ul>
+                                      <li><a target="_blank" href="{{ node.baseurl }}">Home page</a>
+                                      <li ng-repeat="addlinks in node.addlinks">
+                                          <a target="_blank" href="{{ addlinks.1 }}">{{ addlinks.0 }}</a>
+                                      </li>
+                                  </ul>
+                              </div>
                           </div>
                       </div>
                       <h3>Resources</h3>
@@ -235,7 +244,7 @@
                       <div ng-repeat="record in node.records  | filter:search | orderBy:'title'">
                           <p><strong>{{record.title}}</strong></p>
                           <div ng-bind-html="record.abstract"></div>
-                          <a href="{{record.url}}" class="btn btn-xs btn-link" target="_blank">{{ record.url | limitTo:30 }}...</a>
+                          <a  ng-if="record.url" href="{{record.url}}" class="btn btn-xs btn-link" target="_blank">{{ record.url | limitTo:30 }}...</a>
                           <div class="btn-toolbar" role="toolbar">
                               <div class="btn-group btn-group-xs">
                                   <button ng-if="record.wms_source" type="button" class="btn btn-primary" ng-click="$parent.addWMSLayer(record.bbox, record.wms_source, record.title)">Add to map</button>

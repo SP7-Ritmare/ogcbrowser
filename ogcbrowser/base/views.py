@@ -1,5 +1,6 @@
 from os.path import join, splitext
 import json
+from collections import OrderedDict
 import requests
 from urlparse import urlparse
 # from lxml import etree
@@ -17,7 +18,7 @@ from django.http import HttpResponse
 from django.views.generic.base import TemplateView
 from django.contrib.gis.geos import Polygon
 from django.core.cache import cache
-
+from django.conf import settings
 
 from geosk.osk.sos import Catalog
 from broker import WMSBroker, SOSBroker
@@ -51,7 +52,7 @@ def get_wmsurl(request):
 
 def get_node(request, id):
     # r = Registry('http://adamassoft.it/jbossTest/registry/monitor/SP5/nodes')
-    r = Registry('http://sp7.irea.cnr.it/registry/monitor/nodes/')
+    r = Registry(settings.OGCBROWSER_REGISTRY)
     nodes = r.nodes
     node = (item for item in nodes if item["id"] == int(id)).next()
     if node['type'] == 'tds':
@@ -213,8 +214,7 @@ def get_node(request, id):
     return HttpResponse(json.dumps(node, indent=4), content_type = "application/json")
 
 def get_nodes(request):
-    # r = Registry('http://adamassoft.it/jbossTest/registry/monitor/SP5/nodes')
-    r = Registry('http://sp7.irea.cnr.it/registry/monitor/nodes/')
+    r = Registry(settings.OGCBROWSER_REGISTRY)
     nodes = r.nodes
     return HttpResponse(json.dumps(nodes), content_type = "application/json")
 
@@ -413,40 +413,63 @@ class Registry(object):
             if r.status_code == 200:
                 _json = r.json()
                 spezia = None
+                # ancona = None
                 for n in _json:
-                    if n['id'] == 70:
-                        n['baseurl'] = 'http://tds.ve.ismar.cnr.it:8080/thredds/catalog.html'
-                        n['tdsurl'] = 'http://tds.ve.ismar.cnr.it:8080/thredds/catalog.xml'
-                    if n['id'] == 71:
-                        n['baseurl'] = 'http://ritmare.artov.isac.cnr.it/thredds/catalog.html'
-                        n['tdsurl'] = 'http://ritmare.artov.isac.cnr.it/thredds/catalog.html'
-                    if n['id'] == 73:
-                        n['wmsurl'] = 'http://geonodenodc.ogs.trieste.it/geoserver-ritmare/ows?service=WMS&request=GetCapabilities'
-                    if n['id'] == 75:
-                        spezia = n
+                    # if n['id'] == 70:
+                    #     n['baseurl'] = 'http://tds.ve.ismar.cnr.it:8080/thredds/catalog.html'
+                    #     n['tdsurl'] = 'http://tds.ve.ismar.cnr.it:8080/thredds/catalog.xml'
+                    # if n['id'] == 71:
+                    #     n['baseurl'] = 'http://ritmare.artov.isac.cnr.it/thredds/catalog.html'
+                    #     n['tdsurl'] = 'http://ritmare.artov.isac.cnr.it/thredds/catalog.html'
+                    # if n['id'] == 71:
+                    #     ancona = n
+                    # if n['id'] == 73:
+                    #     n['wmsurl'] = 'http://geonodenodc.ogs.trieste.it/geoserver-ritmare/ows?service=WMS&request=GetCapabilities'
+                    # if n['id'] == 75:
+                    #     spezia = n
                     if n['id'] == 82:
-                        n['geometry'] = {"type": "Point", "coordinates": [12.354236120073102, 45.43047678226529]}
-                        n['type'] = 'sos'
-                        n['sosdetails'] = 'http://icpsm.get-it.it/sensors/sensor/ds/?format=text/html&sensor_id='
+                        # n['geometry'] = {"type": "Point", "coordinates": [12.354236120073102, 45.43047678226529]}
+                        # n['type'] = 'sos'
+                        # n['sensorDetails'] = 'http://icpsm.get-it.it/sensors/sensor/ds/?format=text/html&sensor_id='
+                        n['addlinks'] = [('Capabilities', 'http://icpsm.get-it.it/observations/sos/kvp?service=SOS&request=GetCapabilities'),
+                                         ('GET-IT sensors', 'http://icpsm.get-it.it/sensors/'),
+                                         ('Smart Data Viewer', 'http://portale0-sp7.ismar.cnr.it/sosdata/dashboard/db/icpsm?theme=light')]
+                        icpsm = n
+
                     if n['id'] == 83:
-                        n['baseurl'] = 'http://tds.bo.isac.cnr.it:8080/thredds/catalog.html'
-                        n['tdsurl'] = 'http://tds.bo.isac.cnr.it:8080/thredds/catalog.xml'
-                        n['geometry'] = {"type": "Point", "coordinates": [11.3383544,44.5222407]}
+                        n["standards"] = ["OPENDAP", "WMS", "NCML", "UDDC", "ISO"]
 
-                # remove spezia
-                if spezia is not None:
-                    _json.remove(spezia)
+                    if n['id'] == 84:
+                        n["addlinks"] = [('Capabilities', 'http://vesk.ve.ismar.cnr.it/observations/sos/kvp?service=SOS&request=GetCapabilities'),
+                                         ('GET-IT sensors', 'http://vesk.ve.ismar.cnr.it/sensors/'),
+                                         ('Smart Data Viewer', 'http://portale0-sp7.ismar.cnr.it/sosdata/dashboard/db/vesk?theme=light')]
 
-                # _json.append({
-                #     "id": 14,
-                #     "name": "ICPSM SOS",
-                #     "baseurl": "http://www.comune.venezia.it/flex/cm/pages/ServeBLOB.php/L/IT/IDPagina/1748",
-                #     "sosurl": "http://icpsm.get-it.it/observations/sos/kvp?",
-                #     "sosdetails": "http://icpsm.get-it.it/sensors/sensor/ds/?format=text/html&sensor_id=",
+
+                    # if n['id'] == 83:
+                    #     n['baseurl'] = 'http://tds.bo.isac.cnr.it:8080/thredds/catalog.html'
+                    #     n['tdsurl'] = 'http://tds.bo.isac.cnr.it:8080/thredds/catalog.xml'
+                    #     n['geometry'] = {"type": "Point", "coordinates": [11.3383544,44.5222407]}
+
+                # # remove spezia
+                # if spezia is not None:
+                #     _json.remove(spezia)
+                # remove ancona
+                # if ancona is not None:
+                #     _json.remove(ancona)
+
+                # _json.insert(_json.index(icpsm), {
+                #     "id": 10,
+                #     "name": "VESK SOS",
+                #     "baseurl": "http://vesk.ve.ismar.cnr.it/",
+                #     "sosurl": "http://vesk.ve.ismar.cnr.it/observations/sos/kvp?",
+                #     "sensorDetails": "http://vesk.ve.ismar.cnr.it/sensors/sensor/ds/?format=text/html&sensor_id=",
                 #     "logo": "https://portal.opengeospatial.org/public_ogc/compliance/badge.php?s=SOS%202.0.0",
                 #     "type": "sos",
                 #     "geometry": {"type": "Point", "coordinates": [12.354236120073102, 45.43047678226529]},
-                #     "standards": ["SOS"]
+                #     "standards": ["SOS"],
+                #     "addlinks": [('Capabilities', 'http://vesk.ve.ismar.cnr.it/observations/sos/kvp?service=SOS&request=GetCapabilities'),
+                #                  ('GET-IT sensors', 'http://vesk.ve.ismar.cnr.it/sensors/'),
+                #                  ('Smart Data Viewer', 'http://portale0-sp7.ismar.cnr.it/sosdata/dashboard/db/vesk?theme=light')]
                 # })
 
                 # _json.append({
