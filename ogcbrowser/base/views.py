@@ -16,7 +16,7 @@ from thredds_crawler.crawl import Crawl
 
 from django.http import HttpResponse
 from django.views.generic.base import TemplateView
-from django.contrib.gis.geos import Polygon
+from django.contrib.gis.geos import Polygon, GEOSException
 from django.core.cache import cache
 from django.conf import settings
 
@@ -104,7 +104,10 @@ def get_node(request, id):
                         r = ds.isomd.identification
                         bbox = [r.bbox.minx, r.bbox.miny, r.bbox.maxx, r.bbox.maxy]
                         bbox = [float(v) for v in bbox]
-                        bbox_coords = Polygon.from_bbox(bbox).coords
+                        try:
+                            bbox_coords = Polygon.from_bbox(bbox).coords
+                        except GEOSException:
+                            bbox = [-180.0, -88.0, 180.0, 88.0]
                     elif hasattr(ds, 'wms'):
                         if len(ds.wms.contents) > 0:
                             layer = ds.wms.contents.itervalues().next()
